@@ -3,6 +3,7 @@ import Movies from './components/Movies';
 import Navbar from './components/Navbar';
 import { useState } from 'react';
 import Demo from './components/Demo';
+import Footer from "./components/Footer";
 
 import { Routes, Route } from 'react-router-dom';
 import MovieDetails from './components/MovieDetails';
@@ -27,6 +28,7 @@ function App() {
 
   <Route path="/movies/:movieId" element={<MovieDetails />} />
 </Routes>
+<Footer />
 
     </div>
   );
