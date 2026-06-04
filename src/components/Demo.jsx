@@ -1,0 +1,31 @@
+import { Card, Image, Text, Badge, Button, Group } from '@mantine/core';
+
+function Demo({img , title}) {
+  return (
+    <Card shadow="sm" padding="lg" radius="md" withBorder>
+      <Card.Section>
+        <Image
+          src={img}
+          height={160}
+          alt="Norway"
+        />
+      </Card.Section>
+
+      <Group justify="space-between" mt="md" mb="xs">
+        <Text fw={500}>{title}</Text>
+    
+      </Group>
+
+      {/* <Text size="sm" c="dimmed">
+        With Fjord Tours you can explore more of the magical fjord landscapes with tours and
+        activities on and around the fjords of Norway
+      </Text> */}
+
+      <Button color="blue" fullWidth mt="md" radius="md">
+       View Details
+      </Button>
+    </Card>
+  );
+}
+
+export default Demo;
