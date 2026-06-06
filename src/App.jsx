@@ -28,7 +28,7 @@ function App() {
 
   <Route path="/movies/:movieId" element={<MovieDetails />} />
 </Routes>
-<Footer />
+<Footer />  
 
     </div>
   );

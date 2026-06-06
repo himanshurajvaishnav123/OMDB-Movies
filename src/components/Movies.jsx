@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+ import Fuse from 'fuse.js';
 
 
 import {
@@ -17,39 +18,63 @@ function Movies({ setTotalResults }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const COMMON_TYPOS = {
+  'avngers': 'avengers', 'batmen': 'batman', 'spidermn': 'spiderman',
+  'intersteler': 'interstellar', 'incepion': 'inception',
+};
 
   console.log(query);
   console.log(movies);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+ 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!query.trim()) return;
 
-    setIsLoading(true);
-    setError('');
-    setHasSearched(true);
+  setIsLoading(true);
+  setError('');
+  setHasSearched(true);
 
-    try {
-      const response = await fetch(
-        `https://www.omdbapi.com/?s=${encodeURIComponent(
-          query
-        )}&apikey=b0eec689`
-      );
-      const data = await response.json();
+  // Step 1: Try exact search first
+  try {
+    const searchQuery = COMMON_TYPOS[query.toLowerCase()] || query;
+    const response = await fetch(
+      `https://www.omdbapi.com/?s=${encodeURIComponent(searchQuery)}&apikey=b0eec689`
+    );
+    const data = await response.json();
 
-      if (data.Response === 'True') {
-        setMovies(data.Search || []);
-        setTotalResults && setTotalResults(data.totalResults);
-      } else {
-        setMovies([]);
-        setError(data.Error || 'No movies found');
-      }
-    } catch (err) {
-      setError('Failed to search movies. Please try again.');
-    } finally {
+    if (data.Response === 'True') {
+      setMovies(data.Search || []);
+      setTotalResults && setTotalResults(data.totalResults);
       setIsLoading(false);
+      return;
     }
-  };
+
+    // Step 2: If failed, try removing last 2 chars (handles suffix typos)
+    const trimmedQuery = query.slice(0, -2);
+    if (trimmedQuery.length >= 3) {
+      const fallbackRes = await fetch(
+        `https://www.omdbapi.com/?s=${encodeURIComponent(trimmedQuery)}&apikey=b0eec689`
+      );
+      const fallbackData = await fallbackRes.json();
+
+      if (fallbackData.Response === 'True') {
+        setMovies(fallbackData.Search || []);
+        setError(''); // clear error, show results
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Step 3: Nothing found
+    setMovies([]);
+    setError(`No results for "${query}". Check spelling and try again.`);
+  } catch (err) {
+    setError('Failed to search movies. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const MovieCard = ({ movie }) => (
     <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-emerald-100">

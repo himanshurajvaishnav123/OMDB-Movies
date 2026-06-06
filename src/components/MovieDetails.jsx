@@ -21,6 +21,7 @@ function MovieDetails({ onBack }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false); // ← ADDED
   const { movieId } = useParams();
 
   const fetchMovieDetails = async () => {
@@ -116,6 +117,49 @@ function MovieDetails({ onBack }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+
+      {/* ── TRAILER MODAL ──────────────────────────────────────────── */}
+      {showTrailer && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowTrailer(false)}
+        >
+          <div
+            className="bg-gray-900 rounded-2xl overflow-hidden w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+              <h3 className="text-white font-semibold">
+                {movie.Title} — Trailer
+              </h3>
+              <button
+                onClick={() => setShowTrailer(false)}
+                className="text-gray-400 hover:text-white text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-6 text-center">
+              <p className="text-gray-400 mb-6 text-sm">
+                Opens YouTube search for the official trailer
+              </p>
+              <a
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(
+                  movie.Title + ' ' + movie.Year + ' official trailer'
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                <Play className="w-5 h-5" />
+                Open on YouTube
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ────────────────────────────────────────────────────────────── */}
+
       <div className="relative">
         <div className="absolute inset-0 z-0">
           <img
@@ -152,7 +196,11 @@ function MovieDetails({ onBack }) {
                   className="w-full max-w-md mx-auto rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-                <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {/* Poster play button also opens trailer */}
+                <button
+                  onClick={() => setShowTrailer(true)}
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
                   <div className="w-20 h-20 bg-emerald-600 hover:bg-emerald-700 rounded-full flex items-center justify-center shadow-xl">
                     <Play className="w-8 h-8 ml-1" />
                   </div>
@@ -225,12 +273,18 @@ function MovieDetails({ onBack }) {
                 </p>
               </div>
 
+              {/* ── ACTION BUTTONS ──────────────────────────────────── */}
               <div className="flex flex-wrap gap-4">
-                <button className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors">
+                {/* Watch Trailer — opens modal */}
+                <button
+                  onClick={() => setShowTrailer(true)}
+                  className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors"
+                >
                   <Play className="w-5 h-5" />
                   Watch Trailer
                 </button>
 
+                {/* Favourite toggle */}
                 <button
                   onClick={() => setIsFavorite(!isFavorite)}
                   className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors ${
@@ -245,11 +299,50 @@ function MovieDetails({ onBack }) {
                   {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
                 </button>
 
+                {/* Share */}
                 <button className="flex items-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold transition-colors">
                   <Share2 className="w-5 h-5" />
                   Share
                 </button>
               </div>
+
+              {/* ── WHERE TO WATCH ──────────────────────────────────── */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-300 mb-3">
+                  Where to Watch
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    {
+                      name: 'Netflix',
+                      color: 'bg-red-600 hover:bg-red-700',
+                      url: `https://www.netflix.com/search?q=${encodeURIComponent(movie.Title)}`,
+                    },
+                    {
+                      name: 'Prime Video',
+                      color: 'bg-blue-600 hover:bg-blue-700',
+                      url: `https://www.amazon.com/s?k=${encodeURIComponent(movie.Title)}&i=instant-video`,
+                    },
+                    {
+                      name: 'JustWatch',
+                      color: 'bg-emerald-600 hover:bg-emerald-700',
+                      url: `https://www.justwatch.com/in/search?q=${encodeURIComponent(movie.Title)}`,
+                    },
+                  ].map((provider) => (
+                    <a
+                      key={provider.name}
+                      href={provider.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center gap-2 px-5 py-2 ${provider.color} text-white rounded-lg font-semibold transition-colors text-sm`}
+                    >
+                      <Play className="w-4 h-4" />
+                      {provider.name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              {/* ─────────────────────────────────────────────────────── */}
             </div>
           </div>
         </div>
